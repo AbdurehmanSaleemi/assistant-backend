@@ -20,16 +20,17 @@ const openai = new OpenAIApi(config);
 const PORT = process.env.PORT || 3001;
 
 // Load the documents from the pdf file
-const loader = new PDFLoader("file2.pdf", {
+const loader = new PDFLoader("file1.pdf", {
     // you may need to add `.then(m => m.default)` to the end of the import
     pdfjs: () => import("pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js"),
 });
-const docs = await loader.load();
+
+const docs = await loader.load()
 
 // Split the documents into chunks of 4000 characters with an overlap of 200 characters
 const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 4000,
-    chunkOverlap: 200,
+    chunkSize: 750,
+    chunkOverlap: 50,
 });
 
 
@@ -39,7 +40,6 @@ const getEmbeddings = async () => {
     for (var i = 0; i < docs.length; i++) {
         const chunks = await splitter.createDocuments([docs[i].pageContent]);
         // remove non-ascii characters
-
         chunks.forEach((chunk) => {
             chunk.pageContent = chunk.pageContent.replace(/\x00/g, '');
         });
@@ -76,9 +76,9 @@ const generateResponse = async (input, context) => {
         messages: [
             {
                 role: "assistant",
-                content: `Explain: ${input} using this information only: ${context}. Dont user your own knowledge.`,
+                content: `Explain: ${input} using this information only: ${context}. Dont user your own knowledge. Give answers in German Language.`,
             }
-        ]
+        ],
     });
     return response;
 }
@@ -102,10 +102,11 @@ app.post('/', async (req, res) => {
             context += result[i].content;
         }
     }
-    const fin = await generateResponse(query, context);
+    //const fin = await generateResponse(query, context);
     res.send(
         {
-            result: fin.data.choices[0].message.content
+            //result: fin.data.choices[0].message.content
+            result: context
         }
     );
 });
