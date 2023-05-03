@@ -19,8 +19,15 @@ const config = new Configuration({
 const openai = new OpenAIApi(config);
 const PORT = process.env.PORT || 3001;
 
+// fs.watch('./', { recursive: true }, (eventType, filename) => {
+//     if (eventType === 'rename' && fs.statSync(filename).isDirectory()) {
+//         console.log(`New folder created: ${filename}`);
+//         // Call your desired function here
+//     }
+// });
+
 // Load the documents from the pdf file
-const loader = new PDFLoader("file1.pdf", {
+const loader = new PDFLoader("fobi/f1.pdf", {
     // you may need to add `.then(m => m.default)` to the end of the import
     pdfjs: () => import("pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js"),
 });
@@ -29,7 +36,7 @@ const docs = await loader.load()
 
 // Split the documents into chunks of 4000 characters with an overlap of 200 characters
 const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 750,
+    chunkSize: 1500,
     chunkOverlap: 50,
 });
 
@@ -84,20 +91,21 @@ const generateResponse = async (input, context) => {
 }
 
 app.post('/', async (req, res) => {
+    try{
     const { query } = req.body;
     const userEmbedding = await createUserEmbedding(query);
     const [{ embedding }] = userEmbedding.data.data;
     console.log(query);
     const result = await searchData(embedding);
     let context = "";
-    if(result.length === 0){
+    if (result.length === 0) {
         res.send(
             {
                 result: "Sorry, I don't know the answer to that question. Please try again."
             }
         );
-        return; 
-    }else {
+        return;
+    } else {
         for (let i = 0; i < result.length; i++) {
             context += result[i].content;
         }
@@ -109,6 +117,9 @@ app.post('/', async (req, res) => {
             result: context
         }
     );
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 
