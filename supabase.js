@@ -23,7 +23,7 @@ const storeData = async (content, embedding) => {
 const searchData = async (query) => {
     let { data, error } = await supabase
         .rpc('match_data', {
-            match_count: 3,
+            match_count: 8,
             query_embedding : query,
         })
 
