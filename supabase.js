@@ -7,13 +7,12 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 // store data in supabase
 
-const storeData = async (content, embedding) => {
+const storeData = async (content, embedding, metadata) => {
     const { data: user, error } = await supabase
-        .from('documents')
+        .from('documents3')
         .insert([
-            { content: content, embedding: embedding },
+            { content: content, embedding: embedding, metadata: metadata },
         ])
-
     if (error) {
         console.log(error)
     }
@@ -21,14 +20,19 @@ const storeData = async (content, embedding) => {
 }
 
 const searchData = async (query) => {
+    const queryEmbedding = query
+    const matchCount = 5
     let { data, error } = await supabase
-        .rpc('match_data', {
-            match_count: 8,
-            query_embedding : query,
-        })
+        .rpc('match_all_data', {
+            query_embedding: queryEmbedding,
+            match_count: matchCount
+        });
 
-    if (error) console.error(error)
-    return data
+    if (error) {
+        console.error(error);
+        return;
+    }
+    return data;
 }
 
 export {
