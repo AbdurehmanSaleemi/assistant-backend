@@ -19,6 +19,51 @@ const config = new Configuration({
 const openai = new OpenAIApi(config);
 const PORT = process.env.PORT || 3001;
 
+// Load the documents from the pdf file
+// const loader = new PDFLoader("busci/doc2.pdf", {
+//     // you may need to add `.then(m => m.default)` to the end of the import
+//     pdfjs: () => import("pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js"),
+// });
+
+// const docs = await loader.load()
+
+// // Split the documents into chunks of 4000 characters with an overlap of 200 characters
+// const splitter = new RecursiveCharacterTextSplitter({
+//     chunkSize: 1500,
+//     chunkOverlap: 50,
+// });
+
+
+// // Function to get the embeddings of the documents and store them in the database
+
+// const getEmbeddings = async () => {
+//     for (let i = 0; i < docs.length; i++) {
+//         const chunks = await splitter.createDocuments([docs[i].pageContent]);
+//         // remove non-ascii characters
+//         chunks.forEach((chunk) => {
+//             chunk.pageContent = chunk.pageContent.replace(/\x00/g, '');
+//         });
+//         console.log(chunks);
+
+//         for (let j = 0; j < chunks.length; j++) {
+//             const embeddings = await openai.createEmbedding({
+//                 model: "text-embedding-ada-002",
+//                 input: chunks[j].pageContent,
+//             });
+
+//             // Pass the metadata to storeData
+//             storeData(chunks[j].pageContent, embeddings.data.data[0].embedding, docs[i].metadata);
+//         }
+//         console.log(i);
+//     }
+// }
+
+// run this only once to get the embeddings of the documents and store them in the database and after that comment it out
+
+//getEmbeddings();
+
+
+
 const createUserEmbedding = async (input) => {
     const userEmbedding = await openai.createEmbedding({
         model: "text-embedding-ada-002",
@@ -60,10 +105,8 @@ app.post('/', async (req, res) => {
             context += result[i].content;
         }
     }
-    //const fin = await generateResponse(query, context);
     res.send(
         {
-            //result: fin.data.choices[0].message.content
             result: context
         }
     );
